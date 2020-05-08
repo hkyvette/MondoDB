@@ -1,0 +1,85 @@
+find db.(table name).find({"key name":"value name"}) db.FundsList.find({classId:"MAGI1A"}) Find the document with classId = MAGI1A
+or 
+db.(table name).find(
+{"key name":"value name",
+$or: [{"key":"value"},{"key":"value"},{"key":"value"},{"key":"value"}]
+})
+
+db.FundMaster.find(
+{client:"MOFA",
+$or:[{shareClassId:"MLAD1U"},{shareClassId:"MLAD1H"},{shareClassId:"MLADMU"}]
+})
+
+Find the documents whose client = MOFA, shareClassId = [MLAD1U, MLAD1H,MLADMU]
+find like  db.(table name).find({"key name":/value name/}) db.FundMaster.find({"fundProvider.en_HK":/Manulife/}) find all fundProvider.en_HK with the word "Manulife" (for example, Manulife asset management, I love Manulife)
+find exists (true/false) db.(table name).find({"key name":$exists: true}) db.FundMaster.find({client:{$exists:true}}) find the documents that contain the key variable Client
+find not equal to db.(table name).find({"key name":$ne: false}) db.FundMaster.find({client:{$ne:false}}) find the documents that contain the key variable Client
+projection (find specific columns) db.(table name).find({"key name":"value name"}).projection({"key name":"value"}) db.FundMaster.find({client:"MOFA"}).projection({shareClassId:-1,}) Find all documents' shareClassIds for client MOFA, -1 means find all
+sort  db.(table name).find({"key name":"value name"}).projection({"key name":"value"}).sort("key name": "sort order") db.FundMaster.find({client:"MOFA"})
+.projection({launchDate:-1})
+.sort({launchDate:-1}) Find all documents' launchDate for client MOFA in descending order (Sorting all funds by latest launchDate)
+limit db.(table name).find({"key name":"value name"}).projection({"key name":"value"}).sort("key name": "sort order").limit(number of documents) 
+db.FundMaster.find({client:"MOFA"})
+.projection({launchDate:-1})
+.sort({launchDate:-1})
+.limit(100)
+
+Find only 100 documents' launchDate for client MOFA in descending order (Sorting all funds by latest launchDate)
+update text, set/unset new variable 
+db.(table name).update(
+{"key name":"value name"},
+{$set: {"updated key name":"updated value name"}}, 
+{multi: true})
+
+db.FundMaster.update({client:"MOFA", fundHouse:"Franklin Templeton", productLine:"MF"},
+{$set:{"shareClassStatus.bb3":true},
+{multi:true}) Under Client MOFA, find all Franklin Templeton documents, update their shareClassStatus from false to true
+customize primary key  db.(table name).find().forEach(
+function(elem){
+db.(table name).update(
+{"key name:"value name", _id: elem._id},
+{$set:{"updated primary key": elem.fundId}})
+}) db.FundsDetail.find().forEach(
+function(elem){
+db.FundsDetail.update(
+{locale:"en_SG", _id: elem._id},
+{$set:{classId: elem.fundId}})
+}) 
+MongoDB defines primary key for each document (_id), this function allows changing it to other value.
+For documents with locale = en_SG, we change their primary key (_id) to the same as their fundId.
+
+font update - list  <ul><li>text</li><li>text<li></ul> 
+text
+text
+Make the text showing as lists on website
+font update - change font color  <font color=red>3.30%</font> 3.30% Make the text colored on website
+font update - bold <b>text</b> text Make the text bold on website
+font update - text underline <u>some text</u> some text Make the text underlined on website
+font update - line break some text<br>some other text 
+some text
+some other text
+
+Make the text with line break on website
+font update - compound effects 1 <font color=red><u>some text</u></font> 
+
+
+Make the text colored and underling on the website.
+font update - compound effects 2 <ul><li><b><font color=red><u>some text</br></font color=red></u></li></ul> 
+
+
+
+update entire table from another collection db.(Target Collection in UAT).save(db.(Original Collection in DEV).find({}).toArray()) db.FundsList.save(db.FundsList.find({locale:"en_SG"}).toArray()) Copy entire LifeCoSG data from DEV to UAT
+update field using value of another field
+
+db.(Find_Table).find({})
+      .forEach(function(elem){
+      db.(Working Table).update( { "primary_key": elem.primary_key }, { "$set": { "required _data": elem.required_data }})
+      })
+
+db.FundMaster.find({client:"MOFA"})
+        .forEach( function(elem){
+        db.FundDividend_test.update( {"shareClassId": elem.shareClassId},{ $set:{"currency":elem.currency}})
+        })
+
+Add currency from FundMaster table to FundDividend table by matching the same shareClassId.
+drop collection db.(table name).drop( ) db.FundMaster_backup.drop( ) Drop the backup collection, to clean the database
